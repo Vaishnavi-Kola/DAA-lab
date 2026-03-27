@@ -1,0 +1,170 @@
+#include <iostream>
+using namespace std;
+
+enum Color { RED, BLACK };
+
+struct Node {
+    int data;
+    Color color;
+    Node *left, *right, *parent;
+};
+
+Node* root = NULL;
+
+// Create node
+Node* createNode(int data) {
+    Node* node = new Node();
+    node->data = data;
+    node->color = RED;
+    node->left = node->right = node->parent = NULL;
+    return node;
+}
+
+// Left rotate
+void rotateLeft(Node*& root, Node*& pt) {
+    Node* pt_right = pt->right;
+
+    pt->right = pt_right->left;
+    if (pt->right != NULL)
+        pt->right->parent = pt;
+
+    pt_right->parent = pt->parent;
+
+    if (pt->parent == NULL)
+        root = pt_right;
+    else if (pt == pt->parent->left)
+        pt->parent->left = pt_right;
+    else
+        pt->parent->right = pt_right;
+
+    pt_right->left = pt;
+    pt->parent = pt_right;
+}
+
+// Right rotate
+void rotateRight(Node*& root, Node*& pt) {
+    Node* pt_left = pt->left;
+
+    pt->left = pt_left->right;
+    if (pt->left != NULL)
+        pt->left->parent = pt;
+
+    pt_left->parent = pt->parent;
+
+    if (pt->parent == NULL)
+        root = pt_left;
+    else if (pt == pt->parent->left)
+        pt->parent->left = pt_left;
+    else
+        pt->parent->right = pt_left;
+
+    pt_left->right = pt;
+    pt->parent = pt_left;
+}
+
+// Fix violations
+void fixInsert(Node*& root, Node*& pt) {
+    Node *parent = NULL;
+    Node *grandparent = NULL;
+
+    while ((pt != root) && (pt->color == RED) &&
+           (pt->parent->color == RED)) {
+
+        parent = pt->parent;
+        grandparent = parent->parent;
+
+        // Parent is left child
+        if (parent == grandparent->left) {
+            Node* uncle = grandparent->right;
+
+            // Case 1: Uncle is RED
+            if (uncle != NULL && uncle->color == RED) {
+                grandparent->color = RED;
+                parent->color = BLACK;
+                uncle->color = BLACK;
+                pt = grandparent;
+            }
+            else {
+                // Case 2 & 3
+                if (pt == parent->right) {
+                    rotateLeft(root, parent);
+                    pt = parent;
+                    parent = pt->parent;
+                }
+                rotateRight(root, grandparent);
+                swap(parent->color, grandparent->color);
+                pt = parent;
+            }
+        }
+        // Parent is right child
+        else {
+            Node* uncle = grandparent->left;
+
+            if (uncle != NULL && uncle->color == RED) {
+                grandparent->color = RED;
+                parent->color = BLACK;
+                uncle->color = BLACK;
+                pt = grandparent;
+            }
+            else {
+                if (pt == parent->left) {
+                    rotateRight(root, parent);
+                    pt = parent;
+                    parent = pt->parent;
+                }
+                rotateLeft(root, grandparent);
+                swap(parent->color, grandparent->color);
+                pt = parent;
+            }
+        }
+    }
+    root->color = BLACK;
+}
+
+// Insert
+void insert(int data) {
+    Node* pt = createNode(data);
+
+    Node* y = NULL;
+    Node* x = root;
+
+    while (x != NULL) {
+        y = x;
+        if (pt->data < x->data)
+            x = x->left;
+        else
+            x = x->right;
+    }
+
+    pt->parent = y;
+
+    if (y == NULL)
+        root = pt;
+    else if (pt->data < y->data)
+        y->left = pt;
+    else
+        y->right = pt;
+
+    fixInsert(root, pt);
+}
+
+// Inorder traversal
+void inorder(Node* root) {
+    if (root == NULL) return;
+    inorder(root->left);
+    cout << root->data << " ";
+    inorder(root->right);
+}
+
+int main() {
+    insert(10);
+    insert(20);
+    insert(30);
+    insert(15);
+    insert(25);
+
+    cout << "Inorder Traversal: ";
+    inorder(root);
+
+    return 0;
+}
