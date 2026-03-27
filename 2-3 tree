@@ -1,0 +1,57 @@
+#include <iostream>
+using namespace std;
+
+struct Node {
+    int data[2];        // max 2 keys
+    Node* child[3];     // max 3 children
+    int n;              // number of keys
+    bool leaf;
+};
+
+Node* createNode(int data) {
+    Node* node = new Node();
+    node->data[0] = data;
+    node->n = 1;
+    node->leaf = true;
+    for (int i = 0; i < 3; i++)
+        node->child[i] = NULL;
+    return node;
+}
+
+// Simple insert (not full split logic, basic understanding)
+Node* insert(Node* root, int data) {
+    if (root == NULL)
+        return createNode(data);
+
+    // If leaf and space available
+    if (root->leaf && root->n < 2) {
+        root->data[root->n++] = data;
+
+        // sort keys
+        if (root->data[0] > root->data[1])
+            swap(root->data[0], root->data[1]);
+    }
+
+    return root;
+}
+
+// Display
+void display(Node* root) {
+    if (root == NULL) return;
+
+    for (int i = 0; i < root->n; i++)
+        cout << root->data[i] << " ";
+}
+
+int main() {
+    Node* root = NULL;
+
+    root = insert(root, 10);
+    root = insert(root, 20);
+    root = insert(root, 5);
+
+    cout << "2-3 Tree elements: ";
+    display(root);
+
+    return 0;
+}
